@@ -18,7 +18,7 @@ const service = {
         return res.status(400).send({ Error: error.details[0].message });
 
       //check email exist or not
-      const FindEmail = await db.reg.findOne({
+      const FindEmail = await db.register.findOne({
         email: req.body.email,
       });
       console.log(FindEmail);

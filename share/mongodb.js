@@ -7,13 +7,13 @@ const client = new MongoClient(URL);
 
 module.exports = {
   db: null,
-  reg: null,
+  register: null,
 
   async connect() {
     await client.connect();
     console.log("Db connection Established");
     this.db = client.db(DB_NAME);
     console.log("Db name is", DB_NAME);
-    this.reg = this.db.collection("reg");
+    this.reg = this.db.collection("register");
   },
 };
