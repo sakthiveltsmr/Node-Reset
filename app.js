@@ -4,7 +4,7 @@ const express = require("express");
 const db = require("./share/mongodb");
 
 const cors = require("cors");
-
+const userRoutes = require("./Routes/user.Routes");
 const app = express();
 
 (async () => {
@@ -16,6 +16,7 @@ const app = express();
       console.log("user middle ware");
       next();
     });
+    app.use("/user", userRoutes);
 
     const PORT = process.env.PORT;
     app.listen(PORT, () => {
