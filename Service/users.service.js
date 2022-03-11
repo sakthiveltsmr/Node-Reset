@@ -1,4 +1,4 @@
-const db = require("mongodb");
+const mongo = require("../share/mongodb");
 
 const bcrypt = require("bcrypt");
 
@@ -7,82 +7,84 @@ const jwt = require("jsonwebtoken");
 const { registerSchema, loginSchema } = require("../share/schema");
 
 const service = {
-  //register data service
+  // register data service
   async register(req, res) {
     try {
-      //validation using joi schema
+      //validation using joi schema (value,error)
       const { value, error } = await registerSchema.validate(req.body);
       console.log(value);
       console.log(error);
       if (error)
         return res.status(400).send({ Error: error.details[0].message });
 
-      //check email exist or not
-      const FindEmail = await db.register.findOne({
+      // check email exist or not
+      const emailExist = await mongo.register.findOne({
         email: req.body.email,
       });
-      console.log(FindEmail);
+      console.log(emailExist); // null if email not exist
 
-      //if email Exist throw error msg
-      if (FindEmail)
-        return res.status(400).send({ alert: "user already exist" });
+      // if email exist throw err message
+      if (emailExist)
+        return res
+          .status(400)
+          .send({ alert: "User already Exist, try with new email id" });
 
-      //gen salt using bcrpt
+      // gen salt using bcrpt
       const salt = await bcrypt.genSalt(10);
-      console.log("random string", salt);
+      console.log("random string ", salt); // 10 times random string
 
-      req.body.password = await bcrypt.hash(req.body.password, salt); //encrypted the password
-      console.log("encrypted password", req.body.password);
+      // hash password with salt ; it'll stored in db;
+      req.body.password = await bcrypt.hash(req.body.password, salt); // gives encrpted string for password. then assign to password body
 
-      //post the data to db
-      const insertdata = await db.reg.insertOne(req.body);
-      console.log(insertdata); //inserted data
-      res.status(200).send("user register successfully");
+      console.log("encrpted password", req.body.password); // now its encrpted string
+
+      // post the user data to db;
+      const postData = await mongo.register.insertOne(req.body);
+      console.log(postData); // userDetails reg
+
+      res.status(201).send("User registered successfully");
     } catch (err) {
-      console.log("error in registeration", err);
+      console.log("err in registration", err);
     }
   },
 
-  //login service
-
+  // login user service (JWT)
   async login(req, res) {
     try {
+      //joi loginschema validation
       const { value, error } = await loginSchema.validate(req.body);
 
       if (error)
         return res.status(400).send({ Error: error.details[0].message });
-      //email exist or not
-      const emailExist = await db.reg.findOne({
+
+      //check first email exist;
+      const emailExist = await mongo.register.findOne({
         email: req.body.email,
       });
       //not exist
       if (!emailExist)
-        return res
-          .status(404)
-          .send({ alert: "user doen't exist,pls register" });
+        return res.status(404).send({ Alert: "User not found,Please Sign up" });
 
-      //check password valid or not
+      //check password valid or not bcrypt.campare
       const passValid = await bcrypt.compare(
         req.body.password,
         emailExist.password
-      );
+      ); //compare with orignal pass and typed password;
 
       if (!passValid)
-        return res
-          .status(400)
-          .send({ alert: "password wrong pls enter valid password" });
+        return res.status(400).send({ Alert: "Enter the correctPassword" });
 
-      //gen token using jwt
-
+      //gen Token using jwt
       const token = jwt.sign(
         {
           userId: emailExist._id,
         },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "5h" }
+        { expiresIn: "8h" }
       );
       console.log(token);
-      res.status(200).send({ Alert: "login sucessfully", token: token });
+
+      res.status(200).send({ Alert: "Login successfully", token: token });
     } catch (err) {
       console.log("error in login", err);
     }
