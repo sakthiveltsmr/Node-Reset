@@ -9,11 +9,12 @@ const { registerSchema, loginSchema } = require("../share/schema");
 const service = {
   // register data service
   async register(req, res) {
+    // console.log("in register");
     try {
-      //validation using joi schema (value,error)
+      //validation using joi schema(value,error)
       const { value, error } = await registerSchema.validate(req.body);
-      console.log(value);
-      console.log(error);
+      console.log("error", error);
+      console.log("value", value);
       if (error)
         return res.status(400).send({ Error: error.details[0].message });
 
@@ -21,28 +22,23 @@ const service = {
       const emailExist = await mongo.register.findOne({
         email: req.body.email,
       });
-      console.log(emailExist); // null if email not exist
-
-      // if email exist throw err message
+      console.log(emailExist);
       if (emailExist)
         return res
           .status(400)
-          .send({ alert: "User already Exist, try with new email id" });
-
-      // gen salt using bcrpt
+          .send({ alert: "user already Exist,try with new Email id" });
+      // gen salt using bcrypt
       const salt = await bcrypt.genSalt(10);
-      console.log("random string ", salt); // 10 times random string
+      console.log("random string", salt);
 
-      // hash password with salt ; it'll stored in db;
-      req.body.password = await bcrypt.hash(req.body.password, salt); // gives encrpted string for password. then assign to password body
+      req.body.password = await bcrypt.hash(req.body.password, salt);
+      console.log("encrpted password", req.body.password);
 
-      console.log("encrpted password", req.body.password); // now its encrpted string
-
-      // post the user data to db;
+      // post the user data to db
       const postData = await mongo.register.insertOne(req.body);
-      console.log(postData); // userDetails reg
-
-      res.status(201).send("User registered successfully");
+      console.log(postData);
+      console.log("user register successfully");
+      return res.status(200).send("register successfully");
     } catch (err) {
       console.log("err in registration", err);
     }
