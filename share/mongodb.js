@@ -14,6 +14,6 @@ module.exports = {
     console.log("Db connection Established");
     this.db = client.db(DB_NAME);
     console.log("Db name is", DB_NAME);
-    this.reg = this.db.collection("register");
+    this.register = this.db.collection("reg");
   },
 };
