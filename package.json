@@ -7,7 +7,7 @@
     "express": "^4.17.3",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
-    "mongodb": "^4.4.1",
+    "mongodb": "4.1.3",
     "nodemailer": "^6.7.2",
     "nodemon": "^2.0.15"
   },
@@ -17,7 +17,7 @@
   "devDependencies": {},
   "scripts": {
     "start": "node app.js",
-    "DevStart":"nodemon app.ja"
+    "DevStart": "nodemon app.ja"
   },
   "author": "sakthi",
   "license": "ISC",
