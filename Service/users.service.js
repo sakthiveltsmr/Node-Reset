@@ -42,4 +42,51 @@ const service = {
       console.log("error in registeration", err);
     }
   },
+
+  //login service
+
+  async login(req, res) {
+    try {
+      const { value, error } = await loginSchema.validate(req.body);
+
+      if (error)
+        return res.status(400).send({ Error: error.details[0].message });
+      //email exist or not
+      const emailExist = await db.reg.findOne({
+        email: req.body.email,
+      });
+      //not exist
+      if (!emailExist)
+        return res
+          .status(404)
+          .send({ alert: "user doen't exist,pls register" });
+
+      //check password valid or not
+      const passValid = await bcrypt.compare(
+        req.body.password,
+        emailExist.password
+      );
+
+      if (!passValid)
+        return res
+          .status(400)
+          .send({ alert: "password wrong pls enter valid password" });
+
+      //gen token using jwt
+
+      const token = jwt.sign(
+        {
+          userId: emailExist._id,
+        },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "5h" }
+      );
+      console.log(token);
+      res.status(200).send({ Alert: "login sucessfully", token: token });
+    } catch (err) {
+      console.log("error in login", err);
+    }
+  },
 };
+
+module.exports = service;
